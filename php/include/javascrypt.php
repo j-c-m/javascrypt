@@ -22,8 +22,8 @@ class javascrypt {
 			throw new Exception('Unable to read public key');
 		}
 		
-		Header('Content-type: application/json');
-		echo json_encode(array('publickey' => file_get_contents($this->public_key_file)));
+		Header('Content-type: text/plain');
+		echo file_get_contents($this->public_key_file);
 		exit();
 	}
 	
@@ -39,10 +39,10 @@ class javascrypt {
 	
 	function handshake()
 	{
-		openssl_private_decrypt(base64_decode($_POST['key']), $key, $this->getprivatekey($this->private_key_file));
+		openssl_private_decrypt(base64_decode(file_get_contents('php://input')), $key, $this->getprivatekey($this->private_key_file));
 		$_SESSION[self::SESSION_KEY] = $key;
-		Header('Content-type: application/json');
-		echo json_encode(array('challenge' =>  sqAES::crypt($key, $key)));
+		Header('Content-type: text/plain');
+		echo sqAES::crypt($key, $key);
 		exit();	
 	}
 	
