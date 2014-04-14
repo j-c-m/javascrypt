@@ -53,7 +53,7 @@ class javascrypt {
 	{
 		openssl_private_decrypt(base64_decode(file_get_contents('php://input')), $this->aeskey, $this->getprivatekey($this->private_key_file));
 		// I think this is the best you can do in php to get the key out of memory.
-		bzero($this->private_key_file);
+		$this->bzero($this->private_key_file);
 		unset($this->private_key_file);
 		$_SESSION[self::SESSION_KEY] = $this->aeskey;
 		Header('Content-type: text/plain');
