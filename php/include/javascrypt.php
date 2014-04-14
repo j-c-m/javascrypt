@@ -4,6 +4,9 @@
 class javascrypt {
 	private $private_key_file;
 	private $public_key_file;
+	private $private_key;
+	
+	private $aeskey;
 	
 	const SESSION_KEY = '_javascryptaeskey';
 	const POST_KEY = '_javascrypt';
@@ -13,6 +16,14 @@ class javascrypt {
 		$this->public_key_file = $public_key_file;
 		$this->private_key_file = $private_key_file;		
 		$this->session_start();
+	}
+	
+	function bzero(&$str)
+	{
+		for($i=0;$i<strlen($str);$i++)
+		{
+			$str[i] = chr(0);
+		}
 	}
 	
 	function getpublickey()
@@ -34,15 +45,19 @@ class javascrypt {
 			throw new Exception('Unable to read private key');
 		}
 		
-		return(file_get_contents($this->private_key_file));
+		$this->private_key = file_get_contents($this->private_key_file);
+		return($this->private_key);
 	}
 	
 	function handshake()
 	{
-		openssl_private_decrypt(base64_decode(file_get_contents('php://input')), $key, $this->getprivatekey($this->private_key_file));
-		$_SESSION[self::SESSION_KEY] = $key;
+		openssl_private_decrypt(base64_decode(file_get_contents('php://input')), $this->aeskey, $this->getprivatekey($this->private_key_file));
+		// I think this is the best you can do in php to get the key out of memory.
+		bzero($this->private_key_file);
+		unset($this->private_key_file);
+		$_SESSION[self::SESSION_KEY] = $this->aeskey;
 		Header('Content-type: text/plain');
-		echo sqAES::crypt($key, $key);
+		echo sqAES::crypt($this->aeskey, $this->aeskey);
 		exit();	
 	}
 	
@@ -59,7 +74,7 @@ class javascrypt {
 	{
 		if(isset($_GET['getpublickey']))
 		{
-			$this->getPublicKey();
+			$this->getpublickey();
 		}
 		if(isset($_GET['handshake']))
 		{
