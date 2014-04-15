@@ -1,3 +1,22 @@
 <html lang="en">
+    
+    <script>
+        //console.log(j);
+        //console.log(q);
+    </script>
+    <body>
+        <form id="theform" method="post" action="form.php">
+            name: <input type="text" name="name"><br/>
+            textarea: <textarea name="textarea"></textarea>
+            <input type="submit" name="go" value="Submit">
+        </form>
+    
+    <script src="../vendor/jsencrypt.min.js"></script>
+    <script src="../vendor/aes.js"></script>
     <script src="../js/javascrypt.js"></script>
+    <script>
+        var j = new javascrypt('javascrypt.php?m=pubkey','javascrypt.php?m=aes');
+        j.encryptform('#theform');
+    </script>
+    </body>
 </html>

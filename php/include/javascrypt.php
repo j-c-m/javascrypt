@@ -26,7 +26,7 @@ class javascrypt {
 		}
 	}
 	
-	function getpublickey()
+	function pubkey()
 	{
 		if(!is_readable($this->public_key_file))
 		{
@@ -49,7 +49,7 @@ class javascrypt {
 		return($this->private_key);
 	}
 	
-	function handshake()
+	function aeshandshake()
 	{
 		openssl_private_decrypt(base64_decode(file_get_contents('php://input')), $this->aeskey, $this->getprivatekey($this->private_key_file));
 		// I think this is the best you can do in php to get the key out of memory.
@@ -61,29 +61,56 @@ class javascrypt {
 		exit();	
 	}
 	
+	static function decryptform()
+	{
+		self::session_start();
+		$decrypted = sqAES::decrypt($_SESSION[self::SESSION_KEY], $_POST[self::POST_KEY]);
+		if($decrypted === false)
+		{
+			return(false);
+		}
+		
+		parse_str($decrypted, $_POST);
+		unset($_REQUEST[self::POST_KEY]);
+		$_REQUEST = array_merge($_POST, $_REQUEST);
+		return($_POST);
+	}
+	
+	static function decryptraw()
+	{
+		self::session_start();
+		$raw_post = file_get_contents('php://stdin');
+		$decrypted = sqAES::decrypt($_SESSION[self::SESSION_KEY], $raw_post);
+		if($decrypted === false)
+		{
+			return($raw_post);
+		}
+		return($decrypted);
+	}
+	
 	static function decrypt()
 	{
 		self::session_start();
-		parse_str(sqAES::decrypt($_SESSION[self::SESSION_KEY], $_POST[self::POST_KEY]), $_POST);
-		//unset($_SESSION[self::SESSION_KEY]);
-		unset($_REQUEST[self::POST_KEY]);
-		$_REQUEST = array_merge($_POST, $_REQUEST);
+		
+		if(isset($_POST[self::POST_KEY]))
+		{
+			return(self::decryptform());
+		} else {
+			return(self::decryptraw());
+		}
 	}
 	
 	function go()
 	{
-		if(isset($_GET['getpublickey']))
+		if(isset($_GET['m']) && $_GET['m'] == 'pubkey')
 		{
-			$this->getpublickey();
+			$this->pubkey();
 		}
-		if(isset($_GET['handshake']))
+		if(isset($_GET['m']) && $_GET['m'] == 'aes')
 		{
-			$this->handshake();
+			$this->aeshandshake();
 		}
-		if(isset($_POST[self::POST_KEY]))
-		{
-			$this->decrypt();
-		}
+		throw new Exception('Unsupported method.');
 	}
 	
 	static function session_start()
