@@ -28,7 +28,40 @@ var javascrypt = (function() {
 
     javascrypt.prototype = {
         constructor: javascrypt,
+        post: post,
     };
+    
+    javascrypt.prototype.onsecure = function(callback)
+    {        
+        if (this.secure === true) {
+            callback.call(this);
+        } else {
+            this.scallbacks.push(function() {
+                callback.call(this);
+            });
+        }
+    }
+    
+    javascrypt.prototype.encryptstr = function(sstring, allow_insecure)
+    {
+        var self = this;
+        
+        if (typeof(allow_insecure) == 'undefined') {
+            allow_insecure = false;
+        }
+        
+        if (!allow_insecure && this.secure === false) {
+            return(false);
+        }
+        
+        if (this.secure === false) {
+            return(sstring);
+        }
+        
+        var string = sstring.toString();
+        
+        return((CryptoJS.AES.encrypt(string, self.aeskey)).toString());
+    }
 
     javascrypt.prototype.encryptform = function(id, allow_insecure) {
         var self = this;

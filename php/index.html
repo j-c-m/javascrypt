@@ -1,5 +1,5 @@
-<html lang="en">
-    
+<!doctype html>
+<html lang="en"> 
     <script>
         //console.log(j);
         //console.log(q);
@@ -16,7 +16,11 @@
     <script src="../js/javascrypt.js"></script>
     <script>
         var j = new javascrypt('javascrypt.php?m=pubkey','javascrypt.php?m=aes');
-        j.encryptform('#theform');
+        j.onsecure(function()
+        {
+            j.encryptform('#theform');
+            j.post('ajax.php',(CryptoJS.AES.encrypt(JSON.stringify({name: 'value'}),j.aeskey)).toString());
+        });
     </script>
     </body>
 </html>

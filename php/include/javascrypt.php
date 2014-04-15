@@ -22,7 +22,7 @@ class javascrypt {
 	{
 		for($i=0;$i<strlen($str);$i++)
 		{
-			$str[i] = chr(0);
+			$str[$i] = chr(0);
 		}
 	}
 	
@@ -61,6 +61,13 @@ class javascrypt {
 		exit();	
 	}
 	
+	static function encrypt($string)
+	{
+		self::session_start();
+		$encrypted = sqAES::crypt($_SESSION[self::SESSION_KEY], $string);
+		return($encrypted);
+	}
+	
 	static function decryptform()
 	{
 		self::session_start();
@@ -79,12 +86,18 @@ class javascrypt {
 	static function decryptraw()
 	{
 		self::session_start();
-		$raw_post = file_get_contents('php://stdin');
+		$raw_post = file_get_contents('php://input');
+		// AES encrypted string begins with Salted_ base64
+		if(substr($raw_post,0, 10) != 'U2FsdGVkX1')
+		{
+			return($raw_post);
+		}
 		$decrypted = sqAES::decrypt($_SESSION[self::SESSION_KEY], $raw_post);
 		if($decrypted === false)
 		{
 			return($raw_post);
 		}
+		$GLOBALS['HTTP_RAW_POST_DATA'] = $decrypted;
 		return($decrypted);
 	}
 	
