@@ -29,6 +29,7 @@ var javascrypt = (function() {
     javascrypt.prototype = {
         constructor: javascrypt,
         post: post,
+        get: get,
     };
     
     javascrypt.prototype.onsecure = function(callback)
