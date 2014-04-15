@@ -13,7 +13,7 @@ var javascrypt = (function() {
         get(pubkeyurl, function(pubkey) {
             self.crypt.setKey(pubkey);
             post(aesurl, self.crypt.encrypt(self.aeskey), function(content) {
-                if (self.aeskey == hex2a(CryptoJS.AES.decrypt(content, self.aeskey))) {
+                if (self.aeskey == self.dec(content)) {
                     self.secure = true;
 
                     while (self.scallbacks.length > 0) {
@@ -42,25 +42,24 @@ var javascrypt = (function() {
         }
     }
     
-    javascrypt.prototype.encryptstr = function(sstring, allow_insecure)
+    javascrypt.prototype.enc = function(sstring)
     {
-        var self = this;
-        
-        if (typeof(allow_insecure) == 'undefined') {
-            allow_insecure = false;
-        }
-        
-        if (!allow_insecure && this.secure === false) {
+        if (typeof(this.aeskey) == 'undefined') {
             return(false);
         }
         
-        if (this.secure === false) {
-            return(sstring);
+        var string = sstring.toString();
+        return((CryptoJS.AES.encrypt(string, this.aeskey)).toString());
+    }
+    
+    javascrypt.prototype.dec = function(sstring)
+    {
+        if (typeof(this.aeskey) == 'undefined') {
+            return(false);
         }
         
         var string = sstring.toString();
-        
-        return((CryptoJS.AES.encrypt(string, self.aeskey)).toString());
+        return(hex2a(CryptoJS.AES.decrypt(string, this.aeskey)));
     }
 
     javascrypt.prototype.encryptform = function(id, allow_insecure) {
@@ -105,7 +104,7 @@ var javascrypt = (function() {
                 var _javascrypt = document.createElement('input');
                 _javascrypt.type = 'hidden';
                 _javascrypt.name = '_javascrypt';
-                _javascrypt.value = (CryptoJS.AES.encrypt(serialize(this), self.aeskey)).toString();
+                _javascrypt.value = self.enc(serialize(this));
                 for(var x = 0;x < this.elements.length;x++)
                 {
                     this[x].disabled = true;
