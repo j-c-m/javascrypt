@@ -6,7 +6,6 @@
             password: <input type="password" name="password"><br/>
             <input type="submit" name="go" value="login">
         </form>
-        
     <br><br><hr>
     <pre id="page_source"></div>
     <script src="../vendor/jsencrypt.min.js"></script>
@@ -21,8 +20,8 @@
         });
     </script>
     <script>
-        j.get('',function(data) {
-            document.querySelector('#page_source').innerText = data ;
+        j.get(window.location,function(data) {
+            document.querySelector('#page_source').textContent = data;
         });    
     </script>
     </body>
