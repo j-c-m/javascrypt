@@ -7,16 +7,30 @@
             <input type="submit" name="go" value="login">
         </form>
     <br><br><hr>
-    <pre id="page_source"></div>
+    <pre id="ajax_response"></pre>
+    <hr>
+    <pre id="page_source"></pre>
     <script src="../vendor/jsencrypt.min.js"></script>
     <script src="../vendor/aes.js"></script>
+    <script src="../vendor/jquery-2.1.0.min.js"></script>
     <script src="../js/javascrypt.js"></script>
     <script>
         var j = new javascrypt('javascrypt.php?m=pubkey','javascrypt.php?m=aes');
+        
         j.onsecure(function()
         {
             j.encryptform('#theform');
-            j.post('ajax.php',j.enc(JSON.stringify({name: 'value'})));
+            j.post('ajax.php',j.enc('ajax test post'));
+        });
+        
+        j.onsecure(function() {
+            $(function () {
+                var data = { data: 'value', moredata: 'more values' };
+                
+                $.post('ajax-jquery.php', j.enc(JSON.stringify(data)), function(r) {
+                    document.querySelector('#ajax_response').textContent =  JSON.stringify(JSON.parse(j.dec(r)),null,'\t');
+                });
+            })
         });
     </script>
     <script>
