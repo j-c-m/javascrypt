@@ -28,7 +28,8 @@
                 var data = { data: 'value', moredata: 'more values' };
                 
                 $.post('ajax-jquery.php', j.enc(JSON.stringify(data)), function(r) {
-                    document.querySelector('#ajax_response').textContent =  JSON.stringify(JSON.parse(j.dec(r)),null,'\t');
+                    document.querySelector('#ajax_response').textContent = 'Encrypted response from server:\n' + r + '\nDecrypted:\n';
+                    document.querySelector('#ajax_response').textContent += JSON.stringify(JSON.parse(j.dec(r)),null,'\t');
                 });
             })
         });
