@@ -13,6 +13,7 @@ var javascrypt = (function() {
         get(pubkeyurl, function(pubkey) {
             self.crypt.setKey(pubkey);
             post(aesurl, self.crypt.encrypt(self.aeskey), function(content) {
+                delete self.crypt;
                 if (self.aeskey == self.dec(content)) {
                     self.secure = true;
 
@@ -31,9 +32,8 @@ var javascrypt = (function() {
         post: post,
         get: get,
     };
-    
-    javascrypt.prototype.onsecure = function(callback)
-    {        
+
+    javascrypt.prototype.onsecure = function(callback) {
         if (this.secure === true) {
             callback.call(this);
         } else {
@@ -42,43 +42,42 @@ var javascrypt = (function() {
             });
         }
     }
-    
-    javascrypt.prototype.enc = function(sstring)
-    {
+
+    javascrypt.prototype.enc = function(sstring) {
         if (typeof(this.aeskey) == 'undefined') {
-            return(false);
+            return (false);
         }
-        
+
         var string = sstring.toString();
-        return((CryptoJS.AES.encrypt(string, this.aeskey)).toString());
+        return ((CryptoJS.AES.encrypt(string, this.aeskey)).toString());
     }
-    
-    javascrypt.prototype.dec = function(sstring)
-    {
+
+    javascrypt.prototype.dec = function(sstring) {
         if (typeof(this.aeskey) == 'undefined') {
-            return(false);
+            return (false);
         }
-        
+
         var string = sstring.toString();
-        return(hex2a(CryptoJS.AES.decrypt(string, this.aeskey)));
+        return (hex2a(CryptoJS.AES.decrypt(string, this.aeskey)));
     }
 
     javascrypt.prototype.encryptform = function(id, allow_insecure) {
         var self = this;
-        
+
         if (typeof(allow_insecure) == 'undefined') {
             allow_insecure = false;
         }
 
+        var form = document.querySelector(id);
+        if (form === null) {
+            return;
+        }
+
         if (!allow_insecure && this.secure === false) {
-            var forms = document.querySelectorAll(id);
 
-            for (var i = 0; i < forms.length; i++) {
-                var els = forms[i].querySelectorAll('input[type=submit]');
-                for (var e = 0; e < els.length; e++) {
-                    els[e].disabled = true;
-
-                }
+            var els = form.querySelectorAll('input[type=submit]');
+            for (var e = 0; e < els.length; e++) {
+                els[e].disabled = true;
             }
 
             this.scallbacks.push(function() {
@@ -88,31 +87,27 @@ var javascrypt = (function() {
         }
 
         /* renable forms if previously disabled, add submit event */
-        var forms = document.querySelectorAll(id);
-        for (var i = 0; i < forms.length; i++) {
-            var els = forms[i].querySelectorAll('input[type=submit]');
-            for (var e = 0; e < els.length; e++) {
-                els[e].disabled = false;
-            }
-            var oldonsubmit;
-            if (typeof(forms[i].onsubmit) == 'function') {
-                oldonsubmit = forms[i].onsubmit;
-            }
-            forms[i].onsubmit = function(event) {
-                if (typeof(oldonsubmit) == 'function') {
-                    oldonsubmit.call(this, event);
-                }
-                var _javascrypt = document.createElement('input');
-                _javascrypt.type = 'hidden';
-                _javascrypt.name = '_javascrypt';
-                _javascrypt.value = self.enc(serialize(this));
-                for(var x = 0;x < this.elements.length;x++)
-                {
-                    this[x].disabled = true;
-                }
-                this.appendChild(_javascrypt);
-            };
+        var els = form.querySelectorAll('input[type=submit]');
+        for (var e = 0; e < els.length; e++) {
+            els[e].disabled = false;
         }
+        var oldonsubmit;
+        if (typeof(form.onsubmit) == 'function') {
+            oldonsubmit = form.onsubmit;
+        }
+        form.onsubmit = function(event) {
+            if (typeof(oldonsubmit) == 'function') {
+                oldonsubmit.call(this, event);
+            }
+            var _javascrypt = document.createElement('input');
+            _javascrypt.type = 'hidden';
+            _javascrypt.name = '_javascrypt';
+            _javascrypt.value = self.enc(serialize(this));
+            for (var x = 0; x < this.elements.length; x++) {
+                this[x].disabled = true;
+            }
+            this.appendChild(_javascrypt);
+        };
     }
 
     function getaeskey() {
