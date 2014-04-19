@@ -34,6 +34,7 @@ class javascrypt {
 		}
 		
 		Header('Content-type: text/plain');
+		Header('Access-Control-Allow-Origin: *');
 		echo file_get_contents($this->public_key_file);
 		exit();
 	}
